@@ -1,10 +1,26 @@
 services:
   stats-server:
+    build: stats-service/stats-server
+    container_name: stats-server-container
     ports:
       - "9090:9090"
+    depends_on:
+      - stats-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/statsdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
 
   stats-db:
-    image: postgres:16.1
+    image: postgres:16.4
+    container_name: stats-db-container
+    ports:
+      - "6432:5432"
+    environment:
+      - POSTGRES_DB=statsdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
 
   ewm-service:
     ports:
