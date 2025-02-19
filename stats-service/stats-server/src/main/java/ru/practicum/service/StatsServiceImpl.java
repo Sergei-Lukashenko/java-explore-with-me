@@ -17,7 +17,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class StatsServiceImpl implements StatsService {
-
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final StatRepository statRepository;
@@ -39,8 +38,7 @@ public class StatsServiceImpl implements StatsService {
                 return statRepository.getAllIpStats(startDate, endDate, uris);
             }
         } catch (Exception e) {
-            throw new ValidationException("Неверный формат даты. Ожидалось " + DTF.toString());
+            throw new ValidationException("Неверный формат одной из дат. Ожидаемый формат " + DTF.toString());
         }
     }
-
 }

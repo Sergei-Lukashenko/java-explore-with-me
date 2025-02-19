@@ -9,8 +9,12 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
+    <groupId>ru.practicum</groupId>
     <artifactId>stats-service</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
     <packaging>pom</packaging>
+
     <modules>
         <module>stats-server</module>
         <module>stats-common</module>
@@ -30,11 +34,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
