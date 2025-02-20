@@ -34,7 +34,7 @@ public class StatsController {
         log.info("Получен GET /stats с параметрами start = {}, end = {}, uris = {}, unique = {}",
                 start, end, uris, unique);
         Collection<StatsViewDto> stats = statsService.getStats(start, end,
-                (uris==null || uris.isEmpty() ? null : uris), unique);
+                (uris == null || uris.isEmpty() ? null : uris), unique);
         log.info("Подготовлен ответ на GET /stats с телом: {}", stats);
         return ResponseEntity.ok().body(stats);
     }
