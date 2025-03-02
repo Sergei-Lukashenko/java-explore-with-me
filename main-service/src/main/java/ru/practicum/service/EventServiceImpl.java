@@ -13,7 +13,7 @@ import ru.practicum.StatsHitDto;
 import ru.practicum.StatsViewDto;
 import ru.practicum.dto.event.*;
 import ru.practicum.enums.EventState;
-import ru.practicum.enums.EventActionStateAdmin
+import ru.practicum.enums.EventActionStateAdmin;
 import ru.practicum.enums.SortingOptions;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
@@ -86,14 +86,17 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Collection<EventDto> findEventsByFilter(List<Long> users, List<String> states, List<Long> categories,
-                                                   String rangeStart, String rangeEnd, Integer from, Integer size) {
+    public Collection<EventDto> findEventsByFilterAdmin(List<Long> users, List<String> states, List<Long> categories,
+                                                        String rangeStart, String rangeEnd, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
 
         LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, DTF) : null;
         LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, DTF) : null;
 
-        return eventRepository.findAllByFilter(users, states, categories, start, end, pageable).stream()
+        return eventRepository.findAllByFilter((users == null || users.isEmpty() ? null : users),
+                        (states == null || states.isEmpty() ? null : states),
+                        (categories == null || categories.isEmpty() ? null : categories),
+                        start, end, pageable).stream()
                 .map(EventMapper.INSTANCE::toEventDto)
                 .toList();
     }
@@ -161,17 +164,17 @@ public class EventServiceImpl implements EventService {
         final User initiator = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Не найден пользователь с ID %d".formatted(userId)));
 
-        final Event event = EventMapper.INSTANCE.toEvent(newEventDto);
+        final Event newEvent = EventMapper.INSTANCE.toEvent(newEventDto);
 
-        final Location location = locationRepository.save(event.getLocation());
+        final Location location = locationRepository.save(newEvent.getLocation());
 
-        event.setInitiator(initiator);
-        event.setState(EventState.PENDING);
-        event.setCreatedOn(LocalDateTime.now());
-        event.setLocation(location);
-        eventRepository.save(event);
+        newEvent.setInitiator(initiator);
+        newEvent.setState(EventState.PENDING);
+        newEvent.setCreatedOn(LocalDateTime.now());
+        newEvent.setLocation(location);
+        eventRepository.save(newEvent);
 
-        return EventMapper.INSTANCE.toEventDto(eventRepository.save(event));
+        return EventMapper.INSTANCE.toEventDto(eventRepository.save(newEvent));
     }
 
     @Override
@@ -199,34 +202,36 @@ public class EventServiceImpl implements EventService {
     public EventDto updateEventAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
         validateEventDate(updateEventAdminRequest.getEventDate());
 
-        final Event event = eventRepository.findById(eventId)
+        final Event storedEvent = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Не найдено событие с ID %d".formatted(eventId)));
 
         if (updateEventAdminRequest.getStateAction() != null) {
             if (updateEventAdminRequest.getStateAction() == EventActionStateAdmin.REJECT_EVENT &&
-                    event.getState() == EventState.PUBLISHED) {
+                    storedEvent.getState() == EventState.PUBLISHED) {
                 throw new ConflictException("Невозможно отменить опубликованное событие %d".formatted(eventId));
             }
 
             if (updateEventAdminRequest.getStateAction() == EventActionStateAdmin.PUBLISH_EVENT &&
-                    event.getState() != EventState.PENDING) {
+                    storedEvent.getState() != EventState.PENDING) {
                 throw new ConflictException("Событие %d не в статусе PENDING, его невозможно опубликовать".formatted(eventId));
             }
 
             if (updateEventAdminRequest.getStateAction() == EventActionStateAdmin.PUBLISH_EVENT &&
-                    event.getEventDate().minusHours(1L).isBefore(LocalDateTime.now())) {
+                    storedEvent.getEventDate().minusHours(1L).isBefore(LocalDateTime.now())) {
                 throw new ConflictException("Невозможно опубликовать событие %d менее, чем за 1 час до его начала".formatted(eventId));
             }
         }
 
-        EventUpdater.INSTANCE.update(event, updateEventAdminRequest);
+        EventUpdater.INSTANCE.update(storedEvent, updateEventAdminRequest);
 
-        if (event.getState() == EventState.PUBLISHED) {
-            event.setPublishedOn(LocalDateTime.now());
-            event.setConfirmedRequests(0L);
-            event.setViews(0L);
+        if (storedEvent.getState() == EventState.PUBLISHED) {
+            storedEvent.setPublishedOn(LocalDateTime.now());
+            storedEvent.setConfirmedRequests(0L);
+            storedEvent.setViews(0L);
         }
-        return EventMapper.INSTANCE.toEventDto(event);
+        eventRepository.save(storedEvent);
+
+        return EventMapper.INSTANCE.toEventDto(storedEvent);
     }
 
     private void sendStatsRequest(HttpServletRequest request) {

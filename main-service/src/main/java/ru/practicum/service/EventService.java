@@ -18,13 +18,13 @@ public interface EventService {
 
     EventDto findEventPublic(Long eventId, HttpServletRequest request);
 
-    Collection<EventDto> findEventsByFilter(List<Long> users,
-                                            List<String> states,
-                                            List<Long> categories,
-                                            String rangeStart,
-                                            String rangeEnd,
-                                            Integer from,
-                                            Integer size);
+    Collection<EventDto> findEventsByFilterAdmin(List<Long> users,
+                                                 List<String> states,
+                                                 List<Long> categories,
+                                                 String rangeStart,
+                                                 String rangeEnd,
+                                                 Integer from,
+                                                 Integer size);
 
     Collection<EventShortDto> findEventsByFilterPublic(String text,
                                                        List<Long> categories,

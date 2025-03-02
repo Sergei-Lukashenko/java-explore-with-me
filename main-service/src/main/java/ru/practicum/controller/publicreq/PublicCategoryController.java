@@ -21,7 +21,7 @@ public class PublicCategoryController {
     @GetMapping
     public ResponseEntity<List<CategoryDto>> findCategories(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
                                            @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
-        log.info("Поступил запрос категорий от индекса {}, количеством {}", from, size);
+        log.info("Поступил запрос категорий от индекса {} количеством {}", from, size);
         return ResponseEntity.ok().body(categoryService.findPortion(from, size));
     }
 

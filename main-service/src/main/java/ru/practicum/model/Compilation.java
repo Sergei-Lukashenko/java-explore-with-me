@@ -5,18 +5,15 @@ import lombok.*;
 
 import java.util.Set;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
-
 @Entity
 @Table(name = "compilations")
 @Data
-@EqualsAndHashCode(of = { "id", "eventDate" })
+@EqualsAndHashCode(of = { "id", "title" })
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Compilation {
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column

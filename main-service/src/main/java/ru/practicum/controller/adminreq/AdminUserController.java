@@ -26,7 +26,7 @@ public class AdminUserController {
     public ResponseEntity<Collection<UserDto>> findUsers(@RequestParam(required = false) List<Long> ids,
                                                          @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                          @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        log.info("Поступил запрос пользователей от индекса {}, количеством {}", from, size);
+        log.info("Поступил запрос пользователей от индекса {} количеством {}", from, size);
         return ResponseEntity.ok().body(userService.findPortion((ids == null || ids.isEmpty() ? null : ids), from, size));
     }
 
