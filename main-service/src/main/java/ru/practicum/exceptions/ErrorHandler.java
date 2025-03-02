@@ -25,7 +25,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ErrorResponse sQLExceptionHandler(final SQLException e) {
+    public ErrorResponse sqlExceptionHandler(final SQLException e) {
         log.error(e.getMessage());
         return ErrorResponse.create(e, HttpStatus.CONFLICT, e.getMessage());
     }
