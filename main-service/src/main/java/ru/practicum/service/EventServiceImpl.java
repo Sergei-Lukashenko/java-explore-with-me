@@ -14,15 +14,18 @@ import ru.practicum.StatsViewDto;
 import ru.practicum.dto.event.*;
 import ru.practicum.enums.EventState;
 import ru.practicum.enums.EventActionStateAdmin;
+import ru.practicum.enums.RequestStatus;
 import ru.practicum.enums.SortingOptions;
 import ru.practicum.exceptions.ConflictException;
 import ru.practicum.exceptions.NotFoundException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.model.Event;
 import ru.practicum.model.Location;
+import ru.practicum.model.Request;
 import ru.practicum.model.User;
 import ru.practicum.storage.EventRepository;
 import ru.practicum.storage.LocationRepository;
+import ru.practicum.storage.RequestRepository;
 import ru.practicum.storage.UserRepository;
 
 import java.time.LocalDateTime;
@@ -30,6 +33,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -41,6 +45,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final LocationRepository locationRepository;
     private final UserRepository userRepository;
+    private final RequestRepository requestRepository;
 
     private final StatsClient statsClient;
 
@@ -232,6 +237,43 @@ public class EventServiceImpl implements EventService {
         eventRepository.save(storedEvent);
 
         return EventMapper.INSTANCE.toEventDto(storedEvent);
+    }
+
+    @Override
+    @Transactional
+    public ParticipationRequestDto newRequest(Long reqUserId, Long eventId) {
+        if (requestRepository.findByUserIdAndEventId(reqUserId, eventId).isEmpty()) {
+            throw new ConflictException("Запрос на участие от пользователя ID %d на событие ID %d уже существует".formatted(reqUserId, eventId));
+        }
+
+        User reqUser = userRepository.findById(reqUserId)
+                .orElseThrow(() -> new NotFoundException("Не найден пользователь с ID %d".formatted(reqUserId)));
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Не найдено событие с ID %d".formatted(eventId)));
+
+        if (Objects.equals(event.getInitiator().getId(), reqUserId))
+            throw new ConflictException("Инициатор события не может делать запрос на участие в нем");
+
+        if (event.getState() != EventState.PUBLISHED)
+            throw new ConflictException("Событие с ID %d еще не опубликовано, запрос на участие отклонен".formatted(eventId));
+
+        if ((event.getParticipantLimit() != 0) && (event.getParticipantLimit() <= event.getConfirmedRequests()))
+            throw new ConflictException("Уже достигнут лимит на посещение события с ID %d".formatted(eventId));
+
+        Request request = Request.builder()
+                .requester(reqUser)
+                .event(event)
+                .createdOn(LocalDateTime.now())
+                .build();
+        if (event.getParticipantLimit() != 0 && event.getRequestModeration())
+            request.setStatus(RequestStatus.PENDING);
+        else {
+            request.setStatus(RequestStatus.CONFIRMED);
+            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+            eventRepository.save(event);
+        }
+        return RequestMapper.INSTANCE.toParticipationRequestDto(requestRepository.save(request));
     }
 
     private void sendStatsRequest(HttpServletRequest request) {
