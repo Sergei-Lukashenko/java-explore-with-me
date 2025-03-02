@@ -3,6 +3,7 @@ package ru.practicum.controller.adminreq;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.event.EventDto;
 import ru.practicum.dto.event.UpdateEventAdminRequest;
@@ -19,7 +20,7 @@ public class AdminEventController {
     private final EventService eventService;
 
     @GetMapping
-    public Collection<EventDto> findEvents(@RequestParam(required = false) List<Long> users,
+    public ResponseEntity<Collection<EventDto>> findEvents(@RequestParam(required = false) List<Long> users,
                                            @RequestParam(required = false) List<String> states,
                                            @RequestParam(required = false) List<Long> categories,
                                            @RequestParam(required = false) String rangeStart,
@@ -29,13 +30,13 @@ public class AdminEventController {
     ) {
         log.info("Поступил Admin-запрос событий от индекса {} количеством {}, users = {}, states = {}, categories = {}, rangeStart = {}, rangeEnd = {}",
                 from, size, users, states, categories, rangeStart, rangeEnd);
-        return eventService.findEventsByFilterAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+        return ResponseEntity.ok().body(eventService.findEventsByFilterAdmin(users, states, categories, rangeStart, rangeEnd, from, size));
     }
 
     @PatchMapping("/{eventId}")
-    public EventDto updateEventAdmin(@PathVariable Long eventId,
+    public ResponseEntity<EventDto> updateEventAdmin(@PathVariable Long eventId,
                                      @RequestBody @Valid UpdateEventAdminRequest updateEventAdminRequest) {
         log.info("Получен Admin-запрос на обновление события с ID {} и телом {}", eventId, updateEventAdminRequest);
-        return eventService.updateEventAdmin(eventId, updateEventAdminRequest);
+        return ResponseEntity.ok().body(eventService.updateEventAdmin(eventId, updateEventAdminRequest));
     }
 }

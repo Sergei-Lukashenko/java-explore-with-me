@@ -120,14 +120,14 @@ public class EventServiceImpl implements EventService {
         if (rangeEnd != null) {
             end = LocalDateTime.parse(rangeEnd, DTF);
             if (end.isBefore(start)) {
-                throw new ValidationException("Дата окончания события до указанной даты начала или до текущего момента при пустой дате начала");
+                throw new ValidationException("Дата окончания события оказалась до указанной даты начала или до текущего момента при пустой дате начала");
             }
         }
 
         sendStatsRequest(request);
 
-        List<Event> events = eventRepository.findAllByFilterPublic(text, categories, paid, start, end, onlyAvailable,
-                EventState.PUBLISHED, pageable);
+        List<Event> events = eventRepository.findAllByFilterPublic(text, (categories == null || categories.isEmpty() ? null : categories),
+                paid, start, end, onlyAvailable, EventState.PUBLISHED, pageable);
 
         List<String> uris = events.stream()
                 .map(e -> "/event/" + e.getId())
