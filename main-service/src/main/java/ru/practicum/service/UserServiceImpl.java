@@ -24,20 +24,20 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    @Transactional
-    public UserDto create(NewUserDto dto) {
-        User user = userRepository.save(UserMapper.INSTANCE.toUser(dto));
-        log.info("Добавлен новый пользователь с ID {}", user.getId());
-        return UserMapper.INSTANCE.toUserDto(user);
-    }
-
-    @Override
-    public Collection<UserDto> getAll(List<Long> ids, Integer from, Integer size) {
+    public Collection<UserDto> findPortion(List<Long> ids, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
                 Sort.by(Sort.Direction.ASC, "id"));
         return userRepository.findAllByFilter(ids, pageable).stream()
                 .map(UserMapper.INSTANCE::toUserDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public UserDto create(NewUserDto dto) {
+        User user = userRepository.save(UserMapper.INSTANCE.toUser(dto));
+        log.info("Добавлен новый пользователь с ID {}", user.getId());
+        return UserMapper.INSTANCE.toUserDto(user);
     }
 
     @Override

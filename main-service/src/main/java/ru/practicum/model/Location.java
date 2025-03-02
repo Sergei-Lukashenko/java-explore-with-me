@@ -4,16 +4,19 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "locations")
 @Data
 @EqualsAndHashCode(of = { "id" })
 @NoArgsConstructor
 @AllArgsConstructor
-public class Category {
+public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column
+    private Double lat;
+
+    @Column
+    private Double lon;
 }

@@ -22,18 +22,18 @@ import java.util.List;
 public class AdminUserController {
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<UserDto> addNewUser(@RequestBody @Valid NewUserDto userDto) {
-        log.info("Поступил запрос на создание пользователя с телом {}", userDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(userDto));
-    }
-
     @GetMapping
     public ResponseEntity<Collection<UserDto>> findUsers(@RequestParam(required = false) List<Long> ids,
                                                          @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                          @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Поступил запрос пользователей от индекса {}, количеством {}", from, size);
-        return ResponseEntity.ok().body(userService.getAll((ids == null || ids.isEmpty() ? null : ids), from, size));
+        return ResponseEntity.ok().body(userService.findPortion((ids == null || ids.isEmpty() ? null : ids), from, size));
+    }
+
+    @PostMapping
+    public ResponseEntity<UserDto> addNewUser(@RequestBody @Valid NewUserDto userDto) {
+        log.info("Поступил запрос на создание пользователя с телом {}", userDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(userDto));
     }
 
     @DeleteMapping("/{userId}")

@@ -6,7 +6,6 @@ import lombok.*;
 @Entity
 @Table(name = "users")
 @Data
-@Builder
 @EqualsAndHashCode(of = { "id", "email" })
 @NoArgsConstructor
 @AllArgsConstructor

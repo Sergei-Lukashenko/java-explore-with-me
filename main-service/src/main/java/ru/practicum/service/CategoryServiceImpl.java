@@ -23,7 +23,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public List<CategoryDto> getAll(Integer from, Integer size) {
+    public List<CategoryDto> findPortion(Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.ASC, "id"));
         return categoryRepository.findAll(pageable).stream()
                 .map(CategoryMapper.INSTANCE::toCategoryDto)
@@ -31,7 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDto getById(Long id) {
+    public CategoryDto findById(Long id) {
         Category category = getCategoryIfExists(id);
         log.info("Выбрана категория ID {} с телом: {}", category.getId(), category);
         return CategoryMapper.INSTANCE.toCategoryDto(category);

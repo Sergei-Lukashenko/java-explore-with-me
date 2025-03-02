@@ -7,10 +7,9 @@ import java.util.Collection;
 import java.util.List;
 
 public interface UserService {
+    Collection<UserDto> findPortion(List<Long> ids, Integer from, Integer size);
 
     UserDto create(NewUserDto dto);
-
-    Collection<UserDto> getAll(List<Long> ids, Integer from, Integer size);
 
     UserDto delete(Long userId);
 }
