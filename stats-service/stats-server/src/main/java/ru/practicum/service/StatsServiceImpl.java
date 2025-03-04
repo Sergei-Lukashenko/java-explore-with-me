@@ -30,11 +30,14 @@ public class StatsServiceImpl implements StatsService {
     @Override
     public Collection<StatsViewDto> getStats(String start, String end, List<String> uris, Boolean unique) {
         if (start == null || end == null) {
-            throw new ValidationException("start and end parameters is mandatory");
+            throw new ValidationException("Параметры start и end не могут быть равны null");
         }
         try {
             LocalDateTime startDate = LocalDateTime.parse(start, DTF);
             LocalDateTime endDate = LocalDateTime.parse(end, DTF);
+            if (endDate.isBefore(startDate) || endDate.isEqual(startDate)) {
+                throw new ValidationException("endDate должен быть после startDate");
+            }
             if (unique) {
                 return statRepository.getUniqueIpStats(startDate, endDate, uris);
             } else {
