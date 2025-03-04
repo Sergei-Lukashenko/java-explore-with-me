@@ -81,7 +81,9 @@ public class EventServiceImpl implements EventService {
                 true);
         log.debug("Получен список StatsViewDto: {}", viewStats);
 
-        final long viewCount = viewStats != null && !viewStats.isEmpty() ? viewStats.getFirst().getHits() : 0;
+        final long viewCount = viewStats != null && !viewStats.isEmpty()
+                ? viewStats.getFirst().getHits()
+                : storedEvent.getViews() + 1;
         storedEvent.setViews(viewCount);
         eventRepository.save(storedEvent);
         return EventMapper.INSTANCE.toEventDto(storedEvent);
