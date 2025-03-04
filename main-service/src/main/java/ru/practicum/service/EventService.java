@@ -50,7 +50,5 @@ public interface EventService {
     EventRequestStatusUpdateResult updateRequestsStatus(Long userId,
                                                         Long eventId,
                                                         EventRequestStatusUpdateRequest updateRequest);
-
-    long countEventByCategory(Long categoryId);
 }
 

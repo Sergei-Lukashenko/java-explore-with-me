@@ -23,8 +23,6 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
-    private final EventService eventService;
-
     @Override
     public List<CategoryDto> findPortion(Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.ASC, "id"));
@@ -52,9 +50,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public CategoryDto delete(Long id) {
         final Category category = getCategoryIfExists(id);
+/*
         if (eventService.countEventByCategory(id) > 0) {
             throw new ConflictException("Не найдена категория с ID %d".formatted(id));
         }
+*/
         categoryRepository.deleteById(id);
         log.info("Удалена категория с ID {}, ее содержимое {}", id, category);
         return CategoryMapper.INSTANCE.toCategoryDto(category);

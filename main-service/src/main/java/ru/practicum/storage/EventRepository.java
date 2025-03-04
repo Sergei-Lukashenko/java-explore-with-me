@@ -76,6 +76,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                       @Param("state") EventState state,
                                       Pageable pageable);
 
-    @Query("SELECT COUNT(e) FROM Event as e WHERE e.category.id = categoryId")
-    long countByCategory(@Param("categoryId") Long categoryId);
+/*    @Query("SELECT COUNT(e) FROM Event as e WHERE e.category.id = categoryId")
+    long countByCategory(@Param("categoryId") Long categoryId);*/
 }

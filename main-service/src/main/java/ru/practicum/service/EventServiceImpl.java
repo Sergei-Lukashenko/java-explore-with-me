@@ -376,11 +376,6 @@ public class EventServiceImpl implements EventService {
         return result;
     }
 
-    @Override
-    public long countEventByCategory(Long categoryId) {
-        return eventRepository.countByCategory(categoryId);
-    }
-
     private void sendStatsRequest(HttpServletRequest request) {
         log.debug("Сохранение статистики запроса события, URI = {}, remoteAddr = {}",
                 request.getRequestURI(), request.getRemoteAddr());
