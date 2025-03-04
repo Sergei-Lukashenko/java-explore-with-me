@@ -29,6 +29,9 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public Collection<StatsViewDto> getStats(String start, String end, List<String> uris, Boolean unique) {
+        if (start == null || end == null) {
+            throw new ValidationException("start and end parameters is mandatory");
+        }
         try {
             LocalDateTime startDate = LocalDateTime.parse(start, DTF);
             LocalDateTime endDate = LocalDateTime.parse(end, DTF);
