@@ -40,7 +40,7 @@ public class StatsClientImpl implements StatsClient {
 
     @Override
     public List<StatsViewDto> getStats(String start, String end, List<String> uris, Boolean unique) {
-        log.info("Запрос статистики с параметрами: start = {}, end = {}, uris = {}, unique ={}",
+        log.info("Запрос статистики с параметрами: start = {}, end = {}, uris = {}, unique = {}",
                 start, end, uris, unique);
         try {
             UriComponents uriComponents = UriComponentsBuilder

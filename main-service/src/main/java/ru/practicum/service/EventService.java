@@ -39,18 +39,16 @@ public interface EventService {
 
     EventDto updateEventAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
-    ParticipationRequestDto newRequest(Long reqUserId, Long eventId);
-/*
+    ParticipationRequestDto newParticipationRequest(Long reqUserId, Long eventId);
 
-    ParticipationRequestDto cancelRequest(long userId, long requestId);
+    ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId);
 
-    Collection<ParticipationRequestDto> findAllRequestsByUserId(long userId);
+    Collection<ParticipationRequestDto> findAllRequestsByUserId(Long userId);
 
-    Collection<ParticipationRequestDto> findAllRequestsByEventId(long userId, long eventId);
+    Collection<ParticipationRequestDto> findAllRequestsByEventId(Long userId, Long eventId);
 
-    EventRequestStatusUpdateResult updateRequestsStatus(long userId,
-                                                        long eventId,
-                                                        EventRequestStatusUpdateRequest request);
-*/
+    EventRequestStatusUpdateResult updateRequestsStatus(Long userId,
+                                                        Long eventId,
+                                                        EventRequestStatusUpdateRequest updateRequest);
 }
 

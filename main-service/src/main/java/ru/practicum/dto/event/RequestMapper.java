@@ -10,8 +10,6 @@ import ru.practicum.model.Request;
 public interface RequestMapper {
     RequestMapper INSTANCE = Mappers.getMapper(RequestMapper.class);
 
-    Request toRequest(ParticipationRequestDto dto);
-
     @Mapping(target = "requester", expression = "java(request.getRequester().getId())")
     @Mapping(target = "event", expression = "java(request.getEvent().getId())")
     @Mapping(target = "created", source = "createdOn")

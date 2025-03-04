@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "requests")
 @Data
 @Builder
-@EqualsAndHashCode(of = { "id", "userId" })
+@EqualsAndHashCode(of = { "id" })
 @NoArgsConstructor
 @AllArgsConstructor
 public class Request {
@@ -20,7 +20,7 @@ public class Request {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = User.class)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "requester_id", referencedColumnName = "id")
     private User requester;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = Event.class)

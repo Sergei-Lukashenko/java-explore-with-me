@@ -30,10 +30,7 @@ import ru.practicum.storage.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -115,7 +112,6 @@ public class EventServiceImpl implements EventService {
         if (sortingOptions != null) {
             final String sort = sortingOptions == SortingOptions.EVENT_DATE ? "eventDate" : "views";
             pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(sort).descending());
-
         } else {
             pageable = PageRequest.of(from > 0 ? from / size : 0, size);
         }
@@ -131,8 +127,14 @@ public class EventServiceImpl implements EventService {
 
         sendStatsRequest(request);
 
-        List<Event> events = eventRepository.findAllByFilterPublic(text, (categories == null || categories.isEmpty() ? null : categories),
-                paid, start, end, onlyAvailable, EventState.PUBLISHED, pageable);
+        List<Event> events = eventRepository.findAllByFilterPublic(text,
+                (categories == null || categories.isEmpty() ? null : categories),
+                paid, start, end, onlyAvailable, EventState.PUBLISHED, pageable
+        );
+
+        if (events.isEmpty()) {
+            return List.of();
+        }
 
         List<String> uris = events.stream()
                 .map(e -> "/event/" + e.getId())
@@ -140,7 +142,10 @@ public class EventServiceImpl implements EventService {
 
         String startStatsDate = events.stream()
                 .map(Event::getPublishedOn)
-                .min(LocalDateTime::compareTo).get().format(DTF);
+                .min(LocalDateTime::compareTo)
+                .map(d -> d.format(DTF))
+                .orElse("2000-01-01 00:00:00");
+
         String endStatsDate = LocalDateTime.now().format(DTF);
 
         List<StatsViewDto> statViews = statsClient.getStats(startStatsDate, endStatsDate, uris, false);
@@ -241,8 +246,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public ParticipationRequestDto newRequest(Long reqUserId, Long eventId) {
-        if (requestRepository.findByUserIdAndEventId(reqUserId, eventId).isEmpty()) {
+    public ParticipationRequestDto newParticipationRequest(Long reqUserId, Long eventId) {
+        if (requestRepository.findByUserIdAndEventId(reqUserId, eventId).isPresent()) {
             throw new ConflictException("Запрос на участие от пользователя ID %d на событие ID %d уже существует".formatted(reqUserId, eventId));
         }
 
@@ -274,6 +279,99 @@ public class EventServiceImpl implements EventService {
             eventRepository.save(event);
         }
         return RequestMapper.INSTANCE.toParticipationRequestDto(requestRepository.save(request));
+    }
+
+    @Override
+    @Transactional
+    public ParticipationRequestDto cancelParticipationRequest(Long userId, Long requestId) {
+        Request request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Запрос на участие с ID %d не найден".formatted(requestId)));
+        if (!Objects.equals(request.getRequester().getId(), userId))
+            throw new ConflictException("Пользователь с ID %d не является инициатором запроса на участие %d".formatted(userId, requestId));
+        requestRepository.delete(request);
+        request.setStatus(RequestStatus.CANCELED);
+        return RequestMapper.INSTANCE.toParticipationRequestDto(request);
+    }
+
+    @Override
+    public Collection<ParticipationRequestDto> findAllRequestsByUserId(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Не найден пользователь с ID %d".formatted(userId)));
+        return requestRepository.findAllByUserId(userId).stream()
+                .map(RequestMapper.INSTANCE::toParticipationRequestDto)
+                .toList();
+    }
+
+    @Override
+    public Collection<ParticipationRequestDto> findAllRequestsByEventId(Long userId, Long eventId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Не найден пользователь с ID %d".formatted(userId)));
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Не найдено событие с ID %d".formatted(eventId)));
+
+        if (!Objects.equals(event.getInitiator().getId(), userId))
+            throw new ConflictException("Инициатор события отличается от пользователя, указанного в запросе");
+
+        return requestRepository.findAllByEventId(eventId).stream()
+                .map(RequestMapper.INSTANCE::toParticipationRequestDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public EventRequestStatusUpdateResult updateRequestsStatus(Long userId,
+                                                               Long eventId,
+                                                               EventRequestStatusUpdateRequest updateRequest) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Не найден пользователь с ID %d".formatted(userId)));
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Не найдено событие с ID %d".formatted(eventId)));
+
+        if (!Objects.equals(event.getInitiator().getId(), userId))
+            throw new ValidationException("Пользователь ID %d не является инициатором события ID %d".formatted(userId, eventId));
+
+        Collection<Request> requests = requestRepository.findAllRequestsOnEventByIdsAndStatus(eventId,
+                updateRequest.getRequestIds(), RequestStatus.PENDING);
+        int limit = event.getParticipantLimit() - event.getConfirmedRequests().intValue();
+        int confirmed = event.getConfirmedRequests().intValue();
+        if (limit <= 0) {
+            throw new ConflictException("Достигнут лимит на участие в событии %d".formatted(eventId));
+        }
+
+        for (Request req : requests) {
+            if (updateRequest.getStatus().equals(RequestStatus.REJECTED)) {
+                req.setStatus(RequestStatus.REJECTED);
+            } else if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
+                req.setStatus(RequestStatus.CONFIRMED);
+                confirmed++;
+            } else if (limit == 0) {
+                req.setStatus(RequestStatus.REJECTED);
+            } else {
+                req.setStatus(RequestStatus.CONFIRMED);
+                limit--;
+            }
+            requestRepository.save(req);
+        }
+        if (event.getParticipantLimit() != 0)
+            event.setConfirmedRequests((long) event.getParticipantLimit() - limit);
+        else
+            event.setConfirmedRequests((long) confirmed);
+        eventRepository.save(event);
+
+        EventRequestStatusUpdateResult result = new EventRequestStatusUpdateResult();
+        result.setConfirmedRequests(requestRepository.findAllRequestsOnEventByIdsAndStatus(eventId,
+                        updateRequest.getRequestIds(), RequestStatus.CONFIRMED
+                        ).stream()
+                .map(RequestMapper.INSTANCE::toParticipationRequestDto)
+                .toList());
+        result.setRejectedRequests(requestRepository.findAllRequestsOnEventByIdsAndStatus(eventId,
+                        updateRequest.getRequestIds(), RequestStatus.REJECTED
+                        ).stream()
+                .map(RequestMapper.INSTANCE::toParticipationRequestDto)
+                .toList());
+        return result;
     }
 
     private void sendStatsRequest(HttpServletRequest request) {

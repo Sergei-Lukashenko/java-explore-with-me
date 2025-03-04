@@ -27,6 +27,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             SELECT e
             FROM Event as e
             WHERE e.initiator.id = :userId
+            ORDER BY e.eventDate DESC
             """)
     List<Event> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
@@ -44,8 +45,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             WHERE (:userIds IS NULL OR e.initiator.id in :userIds)
             AND (:states IS NULL OR e.state in :states)
             AND (:categoryIds IS NULL OR e.category.id in :categoryIds)
-            AND (:start IS NULL OR e.eventDate >= :start)
-            AND (:end IS NULL OR e.eventDate <= :end)
+            AND (CAST(:start AS DATE) IS NULL OR e.eventDate >= :start)
+            AND (CAST(:end AS DATE) IS NULL OR e.eventDate <= :end)
+            ORDER BY e.eventDate DESC
             """)
     List<Event> findAllByFilter(@Param("userIds") List<Long> userIds,
                                 @Param("states") List<String> states,
@@ -63,7 +65,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             AND (e.eventDate >= :start)
             AND (e.state = :state)
             AND (:onlyAvailable = false OR e.participantLimit = 0 OR e.confirmedRequests <= e.participantLimit)
-            AND (:end IS NULL OR e.eventDate <= :end)
+            AND (CAST(:end AS DATE) IS NULL OR e.eventDate <= :end)
             """)
     List<Event> findAllByFilterPublic(@Param("text") String text,
                                       @Param("categoryIds") List<Long> categoryIds,
