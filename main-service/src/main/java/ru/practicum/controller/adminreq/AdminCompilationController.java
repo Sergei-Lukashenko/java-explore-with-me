@@ -25,10 +25,11 @@ public class AdminCompilationController {
     }
 
     @DeleteMapping("/{compId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@PathVariable Long compId) {
+    public ResponseEntity deleteById(@PathVariable Long compId) {
         log.info("Получен Admin-запрос на удаление подборки событий с ID {}", compId);
         compilationService.deleteById(compId);
+        return ResponseEntity.noContent().build();
+
     }
 
     @PatchMapping("/{compId}")

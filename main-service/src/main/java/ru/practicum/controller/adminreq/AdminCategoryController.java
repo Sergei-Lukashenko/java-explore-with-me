@@ -24,10 +24,10 @@ public class AdminCategoryController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable Long id) {
+    public ResponseEntity deleteCategory(@PathVariable Long id) {
         log.info("Запрошено удаление категории с ID: {}", id);
         categoryService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}")

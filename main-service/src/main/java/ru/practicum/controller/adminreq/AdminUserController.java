@@ -37,9 +37,9 @@ public class AdminUserController {
     }
 
     @DeleteMapping("/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable Long userId) {
+    public ResponseEntity deleteUser(@PathVariable Long userId) {
         log.info("Получен запрос на удаление пользователя с ID {}", userId);
         userService.delete(userId);
+        return ResponseEntity.noContent().build();
     }
 }

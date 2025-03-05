@@ -10,7 +10,7 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 public class StatsClientConfiguration {
 
     @Value("${stats-server.url}")
-    String baseURI;
+    private String baseURI;
 
     @Bean
     RestClient restClient(RestClient.Builder builder) {

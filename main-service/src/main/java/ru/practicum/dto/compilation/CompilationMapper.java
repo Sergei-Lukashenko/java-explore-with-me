@@ -18,10 +18,6 @@ public interface CompilationMapper {
 
     void update(@MappingTarget Compilation compilation, UpdateCompilationRequest updateCompilationRequest);
 
-/*  to avoid
-    .../java-explore-with-me/main-service/src/main/java/ru/practicum/dto/compilation/CompilationMapper.java:17:17
-    java: Can't map property "Set<Long> events" to "Set<Event> events". Consider to declare/implement a mapping method: "Set<Event> map(Set<Long> value)".
-*/
     @Mapping(target = "id", source = "id")
     Event getEventFromLong(Long id);
 }
