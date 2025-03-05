@@ -83,7 +83,7 @@ public class EventServiceImpl implements EventService {
 
         final long viewCount = viewStats != null && !viewStats.isEmpty()
                 ? viewStats.getFirst().getHits()
-                : storedEvent.getViews() + 1;
+                : /*storedEvent.getViews() +*/ 1;
         storedEvent.setViews(viewCount);
         eventRepository.save(storedEvent);
         return EventMapper.INSTANCE.toEventDto(storedEvent);
