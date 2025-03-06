@@ -3,6 +3,7 @@ package ru.practicum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -15,6 +16,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@SpringBootConfiguration
 public class StatsClientImpl implements StatsClient {
     @Value("${stats-server.url}")
     private String baseUri;
@@ -38,7 +40,7 @@ public class StatsClientImpl implements StatsClient {
 
     @Override
     public List<StatsViewDto> getStats(String start, String end, List<String> uris, Boolean unique) {
-        log.info("Запрос статистики с параметрами: start = {}, end = {}, uris = {}, unique ={}",
+        log.info("Запрос статистики с параметрами: start = {}, end = {}, uris = {}, unique = {}",
                 start, end, uris, unique);
         try {
             UriComponents uriComponents = UriComponentsBuilder
