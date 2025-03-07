@@ -31,6 +31,14 @@ public class CommentServiceImpl implements CommentService {
     private final EventRepository eventRepository;
 
     @Override
+    public List<CommentDto> findAll(Long eventId, Integer from, Integer size) {
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.ASC, "id"));
+        return commentRepository.findAllByEventId(pageable, eventId).stream()
+                .map(CommentMapper.INSTANCE::toCommentDto)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public CommentDto create(Long userId, Long eventId, NewCommentDto newCommentDto) {
         Event event = eventRepository.findById(eventId)
@@ -52,14 +60,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDto> getAll(Long eventId, Integer from, Integer size) {
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.ASC, "id"));
-        return commentRepository.findAllByEventId(pageable, eventId).stream()
-                .map(CommentMapper.INSTANCE::toCommentDto)
-                .toList();
-    }
-
-    @Override
     @Transactional
     public CommentDto update(Long userId, Long eventId, Long commentId, NewCommentDto newCommentDto) {
         Comment comment = validateCommentForEventAndUser(eventId, commentId, userId);
@@ -78,7 +78,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-        public CommentDto adminUpdate(Long eventId, Long commentId, NewCommentDto newCommentDto) {
+    public CommentDto adminUpdate(Long eventId, Long commentId, NewCommentDto newCommentDto) {
         Comment comment = validateCommentForEvent(eventId, commentId);
         comment.setMessage(newCommentDto.getMessage());
         comment.setUpdatedOn(LocalDateTime.now());
@@ -87,6 +87,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void adminDelete(Long eventId, Long commentId) {
         Comment comment = validateCommentForEvent(eventId, commentId);
         commentRepository.delete(comment);

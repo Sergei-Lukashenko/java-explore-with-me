@@ -41,6 +41,6 @@ public class AdminCommentController {
                                                         @RequestParam(name = "from", defaultValue = "0") int from,
                                                         @RequestParam(name = "size", defaultValue = "10") int size) {
         log.info("Получен Admin-запрос списка комментариев по событию ID {}", eventId);
-        return ResponseEntity.ok().body(commentService.getAll(eventId, from, size));
+        return ResponseEntity.ok().body(commentService.findAll(eventId, from, size));
     }
 }
