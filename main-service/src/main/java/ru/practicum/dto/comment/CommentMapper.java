@@ -4,10 +4,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import ru.practicum.model.Comment;
-import ru.practicum.model.Event;
-import ru.practicum.model.User;
-
-import java.util.List;
 
 @Mapper
 public interface CommentMapper {
