@@ -45,7 +45,7 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new NotFoundException("Событие ID %d не найдено".formatted(eventId)));
 
         if (!EventState.PUBLISHED.equals(event.getState())) {
-            throw new ConflictException("Событие ID %d, для которого пытаются создать комментарий, не опубликовано");
+            throw new ConflictException("Событие ID %d не опубликовано".formatted(eventId));
         }
 
         User user = userRepository.findById(userId)
