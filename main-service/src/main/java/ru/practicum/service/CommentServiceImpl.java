@@ -31,11 +31,21 @@ public class CommentServiceImpl implements CommentService {
     private final EventRepository eventRepository;
 
     @Override
-    public List<CommentDto> findAll(Long eventId, Integer from, Integer size) {
+    public List<CommentDto> findAllByEvent(Long eventId, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.ASC, "id"));
         return commentRepository.findAllByEventId(pageable, eventId).stream()
                 .map(CommentMapper.INSTANCE::toCommentDto)
                 .toList();
+    }
+
+    @Override
+    public CommentDto findByEventAndCommentId(Long eventId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий ID %d не найден".formatted(commentId)));
+        if (!Objects.equals(eventId, comment.getEvent().getId())) {
+            throw new ConflictException("Комментарий ID %d не принадлежит событию ID %d".formatted(commentId, eventId));
+        }
+        return CommentMapper.INSTANCE.toCommentDto(comment);
     }
 
     @Override

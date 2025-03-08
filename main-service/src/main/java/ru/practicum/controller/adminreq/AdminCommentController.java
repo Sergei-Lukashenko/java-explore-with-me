@@ -37,10 +37,17 @@ public class AdminCommentController {
     }
 
     @GetMapping("/{eventId}/comments")
-    public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long eventId,
-                                                        @RequestParam(name = "from", defaultValue = "0") int from,
-                                                        @RequestParam(name = "size", defaultValue = "10") int size) {
+    public ResponseEntity<List<CommentDto>> findCommentsByEvent(@PathVariable Long eventId,
+                                                                @RequestParam(name = "from", defaultValue = "0") int from,
+                                                                @RequestParam(name = "size", defaultValue = "10") int size) {
         log.info("Получен Admin-запрос списка комментариев по событию ID {}", eventId);
-        return ResponseEntity.ok().body(commentService.findAll(eventId, from, size));
+        return ResponseEntity.ok().body(commentService.findAllByEvent(eventId, from, size));
+    }
+
+    @GetMapping("/{eventId}/comments/{comId}")
+    public ResponseEntity<CommentDto> findCommentByEventAndId(@PathVariable Long eventId,
+                                                              @PathVariable Long comId) {
+        log.info("Получен Admin-запрос одного комментария ID {} по событию ID {}", comId,eventId);
+        return ResponseEntity.ok().body(commentService.findByEventAndCommentId(eventId, comId));
     }
 }

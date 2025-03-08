@@ -8,7 +8,9 @@ import java.util.List;
 public interface CommentService {
     CommentDto create(Long userId, Long eventId, NewCommentDto newCommentDto);
 
-    List<CommentDto> findAll(Long eventId, Integer from, Integer size);
+    List<CommentDto> findAllByEvent(Long eventId, Integer from, Integer size);
+
+    CommentDto findByEventAndCommentId(Long eventId, Long commentId);
 
     CommentDto update(Long userId, Long eventId, Long commentId, NewCommentDto newCommentDto);
 
